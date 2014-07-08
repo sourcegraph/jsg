@@ -20,7 +20,9 @@
     "defnode": "0.0.5",
     "javascript-idents": "0.0.3",
     "normalize-package-data": "~0.2.8",
-    "tern-scope-walk": "0.0.9"
+    "tern-scope-walk": "0.0.9",
+    "coffee-script" : "",
+    "source-map" : ""
   },
   "devDependencies": {
     "mocha": "1.10.0",

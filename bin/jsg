@@ -5,6 +5,8 @@ var tern = require("tern"), graph = require("../graph");
 var path = require("path"), fs = require("fs");
 require("tern/plugin/doc_comment");
 
+var transpilations = require('../transpilations');
+
 var localDir = process.cwd(), ternDir = path.resolve(__dirname, "../node_modules/tern");
 var spans = true, stats = false;
 
@@ -68,7 +70,9 @@ for (var i = 2, len = process.argv.length; i < len; ++i) {
 }
 
 var server = new tern.Server({
-  getFile: function(file) { return fs.readFileSync(path.resolve(localDir, file), "utf8"); },
+  getFile: function(file) {
+    return fs.readFileSync(path.resolve(localDir, file), "utf8");
+  },
   defs: defs,
   plugins: plugins,
   debug: true,
@@ -89,7 +93,12 @@ for (var i = 0; i < files.length; ++i) {
     console.error("File " + file + " does not exist");
     process.exit(1);
   }
-  server.addFile(file, fs.readFileSync(file, "utf8"));
+
+  var code = fs.readFileSync(file, "utf8");
+  var transformed = transpilations.transpile(file, code);
+  console.log(code);
+  console.log(transformed);
+  server.addFile(file, transformed);
 }
 
 if (!origins.length) usage(1);
@@ -97,8 +106,12 @@ if (!origins.length) usage(1);
 server.flush(function(err) {
   if (err) throw err;
   console.log('{"symbols":');
-  console.log(JSON.stringify(graph.graph(origins, name), null, 2));
+
+  var symbols = graph.graph(origins, name);
+  console.log(JSON.stringify(transpilations.remap(name, symbols), null, 2));
   console.log(',"refs":');
-  console.log(JSON.stringify(annotate.refs(origins, {stats: stats}), null, 2));
+
+  var refs = annotate.refs(origins, {stats: stats});
+  console.log(JSON.stringify(transpilations.remap(name, refs), null, 2));
   console.log('}');
 });
