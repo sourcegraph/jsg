@@ -4,49 +4,15 @@ var symbol_id = require('./symbol_id');
 
 describe('jsg output', function() {
   [
-    {name: 'simple'},
-    {name: 'recv'},
-    {name: 'method'},
-    {name: 'builtin_origin'},
-    {name: 'target_primitive'},
-    {name: 'requirejs', args: ['--plugin', 'requirejs'], files: ['requirejs_b', 'requirejs']},
-    {name: 'requirejs_objdef_file', args: ['--plugin', 'requirejs'], files: ['requirejs_objdef_def', 'requirejs_objdef_other']},
-    {name: 'nodejs', args: ['--plugin', 'node']},
-    {name: 'nodejs_require', args: ['--plugin', 'node']},
-    {name: 'nodejs_exports_ref', args: ['--plugin', 'node']},
-    {name: 'nodejs_module_export_func', args: ['--plugin', 'node']},
-    {name: 'anonymous'},
+    {name: 'simple'}
 
-    {name: 'type_ref'},
-    {name: 'nodejs_export_function_a_b', args: ['--plugin', 'node']},
-    {name: 'nodejs_type_ref', args: ['--plugin', 'node']},
-    {name: 'nodejs_other_module_type_export', args: ['--plugin', 'node'], files: ['nodejs_other_module_type_export', 'nodejs_export_function_a']},
-    {name: 'nodejs_other_module_type_ref_a_b', args: ['--plugin', 'node'], files: ['nodejs_other_module_type_ref_a_b', 'nodejs_export_function_a_b']},
-    {name: 'nodejs_other_module_type_ref_named', args: ['--plugin', 'node']},
-    {name: 'nodejs_require_mod0', args: ['--plugin', 'node']},
-    {name: 'nodejs_require_exported_node_origin_type', args: ['--plugin', 'node']},
-    {name: 'nodejs_console', args: ['--plugin', 'node']},
-    {name: 'nodejs_core', args: ['--plugin', 'node={"coreModulesDir":"testdata/node_core_modules"}']},
-    {name: 'nodejs_core_ref', args: ['--plugin', 'node={"coreModulesDir":"testdata/node_core_modules"}']},
-    {name: 'nodejs_EventEmitter', args: ['--plugin', 'node={"coreModulesDir":"testdata/node_core_modules"}']},
-    {name: 'nodejs_core_require', args: ['--plugin', 'node={"coreModulesDir":"testdata/node_core_modules"}']},
-    {name: 'nodejs_core_method', args: ['--plugin', 'node={"coreModulesDir":"testdata/node_core_modules"}']},
-    {name: 'nodejs_globals', args: ['--plugin', 'node={"coreModulesDir":"testdata/node_core_modules"}']},
-
-
-    // Regressions
-    {name: 'node_path_conflict'},
-    {name: 'constructor_overwrite_prototype_method', failing: true},
-    {name: 'nul_byte_in_name'},
-
-    {name: 'nodejs_require_ecma5_type', args: ['--plugin', 'node']},
   ].filter(function(test) { return new RegExp(process.env['F'] || '').test(test.name); }).forEach(function(test) {
     it(test.name + ' (with args: ' + (test.args || []).join(' ') + ')', function(done) {
       var expFile = './testdata/' + test.name + '.json';
       var want = fs.existsSync(expFile) ? require(expFile) : {};
       var args = [path.join(__dirname, 'bin/jsg')];
       if (test.args) args.push.apply(args, test.args);
-      (test.files || [test.name]).forEach(function(f) { args.push('testdata/' + f + '.js'); });
+      (test.files || [test.name]).forEach(function(f) { args.push('testdata/' + f + '.coffee'); });
       execFile(process.execPath /* node */, args, function(err, stdout, stderr) {
         if (stderr) console.error(stderr);
         assert.ifError(err);
@@ -61,12 +27,9 @@ describe('jsg output', function() {
           });
           return;
         }
-        if (process.env['DEBUG']) {
-          console.log(JSON.stringify(got, null, 2));
-          got.should.eql(want);
-        } else {
-          assert.deepEqual(got, want);
-        }
+
+        //Confirm equality
+        got.should.eql(want);
         done();
       });
     });

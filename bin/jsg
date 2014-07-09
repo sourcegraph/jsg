@@ -96,8 +96,6 @@ for (var i = 0; i < files.length; ++i) {
 
   var code = fs.readFileSync(file, "utf8");
   var transformed = transpilations.transpile(file, code);
-  console.log(code);
-  console.log(transformed);
   server.addFile(file, transformed);
 }
 

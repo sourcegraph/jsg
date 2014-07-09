@@ -1,14 +1,11 @@
-var CoffeeScript = require("coffee-script");
+var CoffeeScript = require("coffee-script-redux");
 var path = require("path");
 var SourceMap = require("source-map");
 var util = require("util");
+var escodegen = require("escodegen");
 
-// Store all of the source maps for later reference
-exports.sourceMaps = {}
-// Store original files before transpilation
-exports.original = {}
-// Store transpiled files
-exports.transformed = {}
+// Persist data between transpile and remap calls
+exports.data = {}
 
 // Transpile the code if it matches one of the known transpilable languages - else, return original code
 exports.transpile = function(filename, code) {
@@ -24,32 +21,54 @@ exports.transpile = function(filename, code) {
 
 // Given a set of symbols or refs, remap the characters using a sourcemap
 exports.remap = function(filename, graph) {
-	var sourceMap = exports.sourceMaps[filename];
-	if(sourceMap == null) return graph;
+	if(exports.data[filename] == null) return graph;
 
-	var mapConsumer = new SourceMap.SourceMapConsumer(sourceMap);
-	mapConsumer.eachMapping(function(m) {
-		//console.log(m);
-		console.log(util.format("{%d, %d} to {%d, %d}", m.generatedLine, m.generatedColumn, m.originalLine, m.originalColumn));
-	});
+	var mapConsumer = new SourceMap.SourceMapConsumer(exports.data[filename].map.toString());
 
-	//var sourceNode = SourceMap.SourceNode.fromStringWithSourceMap(exports.transformed[filename], mapConsumer);
-	//console.log(JSON.stringify(sourceNode, null, 2));
-
-	function remapChar(charPos) {
-		var genLineCol = characterToLineColumn(exports.transformed[filename], charPos)
+	function remapToken(charPos) {
+		var genLineCol = characterToLineColumn(exports.data[filename].code, charPos)
 		var originalLineCol = mapConsumer.originalPositionFor(genLineCol);
-		return lineColumnToCharacter(exports.original[filename], originalLineCol)
+
+		function walkAST(ast, linecol) {
+			if("loc" in ast) {
+				if(linecol.line == ast.loc.start.line && linecol.column == ast.loc.start.column) {
+					return ast;
+				}
+			}
+
+			for(propname in ast) {
+				if(typeof ast[propname] == "object") {
+					var result = walkAST(ast[propname], linecol);
+					if(result != null) return result;
+				}
+			}
+			return null;
+		}
+
+		var node = walkAST(exports.data[filename].jsAST.body, originalLineCol);
+		if(node && node.name) {
+			var start = lineColumnToCharacter(exports.data[filename].original, originalLineCol);
+			var end = start + node.name.length;
+			return {
+				start : start,
+				end : end
+			}
+		}
+		else {
+			return null;
+		}
 	}
 
 	function remapRange(range) {
 		range = range.split("-");
 		var start  = parseInt(range[0]);
-		var end = parseInt(range[1]);
 
-		console.log(start + "-" + end + " to " + remapChar(start) + "-" + remapChar(end));
-
-		return remapChar(start) + "-" + remapChar(end);
+		var newRange = remapToken(start);
+		
+		if(newRange)
+			return newRange.start + "-" + newRange.end;
+		else
+			return null;
 	}
 
 	graph.forEach(function(item) {
@@ -67,14 +86,25 @@ exports.languages = {
 	coffescript : {
 		extension : ".coffee",
 		transpile : function(filename, code) {
-			var transformed = CoffeeScript.compile(code, { sourceMap : true });
+			var csAST = CoffeeScript.parse(code, {
+				optimise: false,
+				raw: true,
+				inputSource: filename
+			});
+			var jsAST = CoffeeScript.compile(csAST, {
+				bare: true
+			});
 
-			//Keep track of the source map and both code files
-			exports.sourceMaps[filename] = transformed.v3SourceMap;
-			exports.original[filename] = code;
-			exports.transformed[filename] = transformed.js;
+			exports.data[filename] = CoffeeScript.jsWithSourceMap(jsAST, filename, {
+				compact: false
+			});
+			exports.data[filename].original = code;
 
-			return transformed.js;
+			// Store AST's
+			exports.data[filename].jsAST = jsAST;
+			exports.data[filename].csAST = csAST;
+
+			return exports.data[filename].code;
 		}
 	}
 }
