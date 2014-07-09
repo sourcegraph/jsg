@@ -1,0 +1,30 @@
+{
+  "symbols": [
+    {
+      "id": "@testdata/func_local`coffee.@41.@local.bar",
+      "key": {
+        "namespace": "file",
+        "module": "testdata/func_local.coffee",
+        "path": "@41.@local.bar"
+      },
+      "type": "number",
+      "file": "testdata/func_local.coffee",
+      "ident": "7-10",
+      "defn": "7-14",
+      "exported": false
+    }
+  ],
+  "refs": [
+    {
+      "file": "testdata/func_local.coffee",
+      "span": "7-10",
+      "target": {
+        "namespace": "file",
+        "module": "testdata/func_local.coffee",
+        "path": "@41.@local.bar",
+        "abstract": false
+      },
+      "def": true
+    }
+  ]
+}
