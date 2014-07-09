@@ -2,7 +2,6 @@ var CoffeeScript = require("coffee-script-redux");
 var path = require("path");
 var SourceMap = require("source-map");
 var util = require("util");
-var escodegen = require("escodegen");
 
 // Persist data between transpile and remap calls
 exports.data = {}
@@ -64,7 +63,7 @@ exports.remap = function(filename, graph) {
 		var start  = parseInt(range[0]);
 
 		var newRange = remapToken(start);
-		
+
 		if(newRange)
 			return newRange.start + "-" + newRange.end;
 		else
