@@ -4,8 +4,8 @@ var symbol_id = require('./symbol_id');
 
 describe('jsg output', function() {
   [
-    {name: 'simple'}
-
+    {name: 'simple'},
+    {name: 'simpler'},
   ].filter(function(test) { return new RegExp(process.env['F'] || '').test(test.name); }).forEach(function(test) {
     it(test.name + ' (with args: ' + (test.args || []).join(' ') + ')', function(done) {
       var expFile = './testdata/' + test.name + '.json';
