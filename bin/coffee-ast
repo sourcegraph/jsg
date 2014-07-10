@@ -1,0 +1,19 @@
+#!/usr/bin/env node
+
+var fs = require('fs');
+var util = require('util');
+var coffee = require('coffee-script');
+
+function generateCustom(source, callback) {
+  var src = fs.readFileSync(source, 'utf8');
+  src = src.replace(/^#.*$/gm, '').trim();
+  console.log(src);
+  var nodes = coffee.nodes(src);
+  // You now have access to the AST through nodes
+  // Walk the AST, modify it...
+  // and then write the JavaScript via compile()
+  console.log(util.inspect(nodes, {depth: 5, colors: true}));
+}
+
+var source = process.argv[2]
+generateCustom(source);
