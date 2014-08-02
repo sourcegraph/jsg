@@ -1,5 +1,7 @@
 # jsg: JavaScript grapher
 
+# Moved to [srclib-javascript](https://sourcegraph.com/github.com/sourcegraph/srclib-javascript) (this repository is no longer a standalone project; submit patches to srclib-javascript)
+
 <a href="http://graphkit.org"><img align="center" alt="GraphKit logo" src="https://raw.github.com/sourcegraph/graphkit/master/media/logo.png"></a>
 
 <a href="https://sourcegraph.com/github.com/joyent/node"><img align=right alt="GraphKit-provided Node.js core API function list on Sourcegraph" src="https://raw.github.com/sourcegraph/graphkit/master/media/symbols-list.png"></a> <a href="https://sourcegraph.com/github.com/joyent/node/symbols/javascript/commonjs/lib/assert.js/-/equal"><img align=right alt="GraphKit-provided cross-references on Sourcegraph" src="https://raw.github.com/sourcegraph/graphkit/master/media/examples.png"></a> **jsg** analyzes JavaScript source code and emits a representation of the code suitable for browsing, documentation generation, or static analysis. The output
